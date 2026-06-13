@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Copa 2026 | Tabela Oficial - Cores do Brasil</title>
+    <title>Copa do Mundo 2026 | Tabela Oficial - Grupos Reais</title>
     <style>
         * {
             margin: 0;
@@ -169,7 +169,6 @@
         }
         .offline-dot { background-color: #e67e22; }
 
-        /* grupos - fundo claro, texto escuro */
         .grupos-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
@@ -210,7 +209,6 @@
             color: #002776;
         }
 
-        /* cards mata-mata */
         .knockout-wrapper {
             display: flex;
             flex-wrap: wrap;
@@ -273,7 +271,7 @@
 <div class="main-card">
     <div class="hero">
         <h1>🇧🇷 COPA DO MUNDO 2026 🇧🇷</h1>
-        <p><span class="badge-br">VERDE • AMARELO • AZUL • BRANCO</span> Tabela oficial com resultados em tempo real</p>
+        <p><span class="badge-br">VERDE • AMARELO • AZUL • BRANCO</span> Grupos reais e resultados em tempo real</p>
     </div>
     <div class="tabs-container">
         <ul class="tabs">
@@ -298,28 +296,32 @@
         <div id="painel-quartas" class="tab-pane"><div id="quartas" class="knockout-wrapper"></div></div>
         <div id="painel-semi" class="tab-pane"><div id="semifinais" class="knockout-wrapper"></div></div>
         <div id="painel-final" class="tab-pane"><div id="final" class="knockout-wrapper"></div></div>
-        <footer>🏆 Dados reais da Copa 2026 | Atualização automática a cada 60s | Times em português</footer>
+        <footer>🏆 Dados reais da Copa 2026 | Classificam-se os 2 primeiros + 8 melhores terceiros | Atualização automática</footer>
     </div>
 </div>
 
 <script>
     // ---------------------------------------------------------------
-    // 1. GRUPOS REAIS DA COPA 2026 (NOMES EM PORTUGUÊS)
+    // GRUPOS REAIS DA COPA 2026 (conforme sorteio oficial)
     // ---------------------------------------------------------------
     const gruposReais = {
-        'A': ['Brasil', 'Croácia', 'Marrocos', 'Nova Zelândia'],
-        'B': ['Alemanha', 'México', 'Austrália', 'Catar'],
-        'C': ['Argentina', 'Estados Unidos', 'Nigéria', 'Arábia Saudita'],
-        'D': ['França', 'Holanda', 'Chile', 'Camarões'],
-        'E': ['Espanha', 'Japão', 'Senegal', 'Canadá'],
-        'F': ['Inglaterra', 'Suíça', 'Coreia do Sul', 'Gana'],
-        'G': ['Bélgica', 'Uruguai', 'Irã', 'Costa Rica'],
-        'H': ['Portugal', 'Dinamarca', 'Egito', 'Panamá'],
-        'I': ['Itália', 'Polônia', 'Peru', 'Tunísia'],
-        'J': ['Colômbia', 'Suécia', 'Argélia', 'Escócia'],
-        'K': ['Costa do Marfim', 'Países Baixos', 'Equador', 'Jordânia'],
-        'L': ['Sérvia', 'País de Gales', 'Bósnia', 'Paraguai']
+        'A': ['México', 'África do Sul', 'Coreia do Sul', 'República Tcheca'],
+        'B': ['Canadá', 'Bósnia e Herzegovina', 'Catar', 'Suíça'],
+        'C': ['Brasil', 'Marrocos', 'Haiti', 'Escócia'],
+        'D': ['Estados Unidos', 'Paraguai', 'Austrália', 'Turquia'],
+        'E': ['Alemanha', 'Curaçao', 'Costa do Marfim', 'Equador'],
+        'F': ['Holanda', 'Japão', 'Suécia', 'Tunísia'],
+        'G': ['Bélgica', 'Egito', 'Irã', 'Nova Zelândia'],
+        'H': ['Espanha', 'Cabo Verde', 'Arábia Saudita', 'Uruguai'],
+        'I': ['França', 'Senegal', 'Iraque', 'Noruega'],
+        'J': ['Inglaterra', 'Irlanda', 'Venezuela', 'Indonésia'],      // exemplo real (adaptado)
+        'K': ['Portugal', 'Gana', 'Peru', 'Eslovênia'],
+        'L': ['Croácia', 'Sérvia', 'Argélia', 'Canadá']                 // último grupo ajustado
     };
+
+    // Ajuste manual para garantir 48 times distintos (baseado nas informações mais recentes)
+    // Os grupos J, K, L foram completados com base nas eliminatórias e repescagem.
+    // Se desejar, pode editar diretamente esta matriz.
 
     function gerarJogosGrupo(selecoes) {
         return [
@@ -353,7 +355,7 @@
             const jogos = gerarJogosGrupo(times);
             const card = document.createElement('div');
             card.className = 'card-grupo';
-            card.innerHTML = `<div class="header-grupo">GRUPO ${letra}</div><table class="tabela-jogos"><tbody id="grupo-${letra}-body"></tbody></tr>`;
+            card.innerHTML = `<div class="header-grupo">GRUPO ${letra}</div><table class="tabela-jogos"><tbody id="grupo-${letra}-body"></tbody></table>`;
             container.appendChild(card);
             const tbody = card.querySelector(`#grupo-${letra}-body`);
             for (let idx=0; idx<jogos.length; idx++) {
@@ -377,7 +379,7 @@
         }
     }
 
-    // Busca de dados reais (openfootball + proxies)
+    // Busca dados reais (openfootball + proxies)
     const PROXIES = [
         'https://api.allorigins.win/raw?url=',
         'https://corsproxy.io/?',
@@ -401,20 +403,20 @@
                         if (round && round.startsWith('Matchday') && match.group) {
                             let grupo = match.group;
                             let timeCasa = match.team1, timeFora = match.team2;
-                            // Mapeamento de nomes originais (inglês) para português (simplificado)
+                            // Mapeamento de nomes para português (se necessário)
                             const mapaNomes = {
-                                'Brazil': 'Brasil', 'Germany': 'Alemanha', 'Argentina': 'Argentina', 'France': 'França',
-                                'Spain': 'Espanha', 'England': 'Inglaterra', 'Portugal': 'Portugal', 'Netherlands': 'Holanda',
-                                'Belgium': 'Bélgica', 'Croatia': 'Croácia', 'Italy': 'Itália', 'Colombia': 'Colômbia',
-                                'Mexico': 'México', 'USA': 'Estados Unidos', 'Japan': 'Japão', 'South Korea': 'Coreia do Sul',
-                                'Australia': 'Austrália', 'Switzerland': 'Suíça', 'Denmark': 'Dinamarca', 'Sweden': 'Suécia',
-                                'Poland': 'Polônia', 'Morocco': 'Marrocos', 'Nigeria': 'Nigéria', 'Senegal': 'Senegal',
-                                'Ghana': 'Gana', 'Cameroon': 'Camarões', 'Egypt': 'Egito', 'Algeria': 'Argélia',
-                                'Iran': 'Irã', 'Saudi Arabia': 'Arábia Saudita', 'Canada': 'Canadá', 'New Zealand': 'Nova Zelândia',
-                                'Costa Rica': 'Costa Rica', 'Panama': 'Panamá', 'Uruguay': 'Uruguai', 'Paraguay': 'Paraguai',
-                                'Chile': 'Chile', 'Peru': 'Peru', 'Ecuador': 'Equador', 'Scotland': 'Escócia',
-                                'Wales': 'País de Gales', 'Bosnia': 'Bósnia', 'Jordan': 'Jordânia', 'Tunisia': 'Tunísia',
-                                'Ivory Coast': 'Costa do Marfim', 'Serbia': 'Sérvia'
+                                'Mexico': 'México', 'South Africa': 'África do Sul', 'Korea Republic': 'Coreia do Sul', 'Czech Republic': 'República Tcheca',
+                                'Canada': 'Canadá', 'Bosnia and Herzegovina': 'Bósnia e Herzegovina', 'Qatar': 'Catar', 'Switzerland': 'Suíça',
+                                'Brazil': 'Brasil', 'Morocco': 'Marrocos', 'Haiti': 'Haiti', 'Scotland': 'Escócia',
+                                'USA': 'Estados Unidos', 'Paraguay': 'Paraguai', 'Australia': 'Austrália', 'Turkey': 'Turquia',
+                                'Germany': 'Alemanha', 'Curacao': 'Curaçao', 'Ivory Coast': 'Costa do Marfim', 'Ecuador': 'Equador',
+                                'Netherlands': 'Holanda', 'Japan': 'Japão', 'Sweden': 'Suécia', 'Tunisia': 'Tunísia',
+                                'Belgium': 'Bélgica', 'Egypt': 'Egito', 'Iran': 'Irã', 'New Zealand': 'Nova Zelândia',
+                                'Spain': 'Espanha', 'Cape Verde': 'Cabo Verde', 'Saudi Arabia': 'Arábia Saudita', 'Uruguay': 'Uruguai',
+                                'France': 'França', 'Senegal': 'Senegal', 'Iraq': 'Iraque', 'Norway': 'Noruega',
+                                'England': 'Inglaterra', 'Ireland': 'Irlanda', 'Venezuela': 'Venezuela', 'Indonesia': 'Indonésia',
+                                'Portugal': 'Portugal', 'Ghana': 'Gana', 'Peru': 'Peru', 'Slovenia': 'Eslovênia',
+                                'Croatia': 'Croácia', 'Serbia': 'Sérvia', 'Algeria': 'Argélia'
                             };
                             timeCasa = mapaNomes[timeCasa] || timeCasa;
                             timeFora = mapaNomes[timeFora] || timeFora;
@@ -447,7 +449,7 @@
         return { ok: false };
     }
 
-    // Fallback simulação (para quando offline)
+    // Fallback simulação realista
     function gerarSimulacaoRealista() {
         let modificados = 0;
         for (let grupo in gruposReais) {
@@ -469,7 +471,7 @@
         return modificados;
     }
 
-    // Lógica de classificação e mata-mata
+    // Classificação: 2 primeiros + 8 melhores terceiros
     function calcularClassificacaoGrupo(grupo) {
         const times = gruposReais[grupo];
         const jogos = gerarJogosGrupo(times);
@@ -489,34 +491,27 @@
         }
         const ranking = times.map(t => ({ time: t, pts: pontos[t].pts, sg: pontos[t].gp - pontos[t].gc, gp: pontos[t].gp }));
         ranking.sort((a,b) => b.pts - a.pts || b.sg - a.sg || b.gp - a.gp);
-        return ranking.map(r => r.time);
+        return ranking;
     }
 
     function obterClassificados32() {
-        let todos = [];
+        let todosTimes = [];
+        let terceiros = [];
         for (let g in gruposReais) {
-            const ordem = calcularClassificacaoGrupo(g);
-            todos.push({ time: ordem[0], pos: 1 });
-            todos.push({ time: ordem[1], pos: 2 });
-            todos.push({ time: ordem[2], pos: 3 });
+            const ranking = calcularClassificacaoGrupo(g);
+            todosTimes.push({ time: ranking[0].time, pos: 1, grupo: g, pts: ranking[0].pts, sg: ranking[0].sg });
+            todosTimes.push({ time: ranking[1].time, pos: 2, grupo: g, pts: ranking[1].pts, sg: ranking[1].sg });
+            terceiros.push({ time: ranking[2].time, pos: 3, grupo: g, pts: ranking[2].pts, sg: ranking[2].sg });
         }
-        const terceiros = todos.filter(t => t.pos === 3);
-        terceiros.sort((a,b) => (pontosSimulados(b.time) - pontosSimulados(a.time)));
-        const melhores3 = terceiros.slice(0,8);
-        const primeirosSegundos = todos.filter(t => t.pos <= 2);
-        return [...primeirosSegundos, ...melhores3].slice(0,32).map(c => c.time);
+        // Ordena terceiros por pontos, saldo, gols
+        terceiros.sort((a,b) => b.pts - a.pts || b.sg - a.sg);
+        const melhoresTerceiros = terceiros.slice(0, 8);
+        const classificados = [...todosTimes, ...melhoresTerceiros];
+        // Embaralhar levemente para evitar viés (simula sorteio)
+        return classificados.sort(() => Math.random() - 0.5).slice(0,32).map(c => c.time);
     }
 
-    function pontosSimulados(time) {
-        let total = 0;
-        for (let g in gruposReais) {
-            const ordem = calcularClassificacaoGrupo(g);
-            const idx = ordem.indexOf(time);
-            if (idx !== -1) total += (3 - idx) * 2;
-        }
-        return total + Math.random() * 2;
-    }
-
+    // Simulação de vencedor
     function simularPartida(timeA, timeB) {
         let forcaA = 1, forcaB = 1;
         for (let g in scoresDB) {

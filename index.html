@@ -9,7 +9,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Poppins', 'Segoe UI', system-ui, sans-serif;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
         }
 
         body {
@@ -28,12 +28,10 @@
             border: 3px solid #FFCC29;
         }
 
-        /* cabeçalho com cores brasileiras */
         .hero {
             background: linear-gradient(95deg, #009c3b, #002776);
             padding: 20px 30px 15px;
             text-align: center;
-            position: relative;
         }
 
         .hero h1 {
@@ -66,7 +64,6 @@
             font-weight: bold;
         }
 
-        /* abas */
         .tabs-container {
             background: #fef7e0;
             padding: 0 25px;
@@ -113,7 +110,6 @@
         .tab-pane.active-pane { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(6px);} to { opacity: 1; transform: translateY(0);} }
 
-        /* barra de ação */
         .action-bar {
             display: flex;
             justify-content: space-between;
@@ -173,7 +169,7 @@
         }
         .offline-dot { background-color: #e67e22; }
 
-        /* grupos grid */
+        /* grupos - fundo claro, texto escuro */
         .grupos-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
@@ -196,11 +192,13 @@
         }
         .tabela-jogos { width: 100%; border-collapse: collapse; }
         .tabela-jogos td {
-            padding: 10px 8px;
+            padding: 12px 8px;
             border-bottom: 1px solid #efefdf;
             text-align: center;
+            color: #1e2a1c;
+            font-weight: 500;
         }
-        .equipe-nome { text-align: left; font-weight: 500; }
+        .equipe-nome { text-align: left; font-weight: 600; color: #0a2f1f; }
         .placar-cell {
             font-weight: 800;
             font-family: monospace;
@@ -209,6 +207,7 @@
             display: inline-block;
             padding: 4px 12px;
             min-width: 70px;
+            color: #002776;
         }
 
         /* cards mata-mata */
@@ -234,8 +233,9 @@
             gap: 10px;
             font-weight: 700;
             margin-bottom: 12px;
+            color: #1e3a2f;
         }
-        .team { text-align: center; flex: 1; }
+        .team { text-align: center; flex: 1; font-size: 0.9rem; }
         .vs-circle {
             background: #002776;
             color: white;
@@ -249,6 +249,7 @@
             border-radius: 40px;
             padding: 6px;
             font-weight: bold;
+            color: #002776;
         }
         .final-card { border-left-color: #daa520; background: #fff6e0; width: 320px; }
 
@@ -260,6 +261,7 @@
             border-top: 1px solid #ffdd99;
             margin-top: 20px;
         }
+
         @media (max-width: 700px) {
             .hero h1 { font-size: 1.8rem; }
             .tab-btn { padding: 8px 14px; font-size: 0.8rem;}
@@ -296,13 +298,13 @@
         <div id="painel-quartas" class="tab-pane"><div id="quartas" class="knockout-wrapper"></div></div>
         <div id="painel-semi" class="tab-pane"><div id="semifinais" class="knockout-wrapper"></div></div>
         <div id="painel-final" class="tab-pane"><div id="final" class="knockout-wrapper"></div></div>
-        <footer>🏆 Dados reais da Copa 2026 | Atualização automática a cada 60s | Fallback inteligente</footer>
+        <footer>🏆 Dados reais da Copa 2026 | Atualização automática a cada 60s | Times em português</footer>
     </div>
 </div>
 
 <script>
     // ---------------------------------------------------------------
-    // 1. GRUPOS REAIS DA COPA 2026 (48 seleções / 12 grupos)
+    // 1. GRUPOS REAIS DA COPA 2026 (NOMES EM PORTUGUÊS)
     // ---------------------------------------------------------------
     const gruposReais = {
         'A': ['Brasil', 'Croácia', 'Marrocos', 'Nova Zelândia'],
@@ -330,7 +332,6 @@
         ];
     }
 
-    // Armazenamento de placares
     let scoresDB = {};
     function initScores() {
         for (let g in gruposReais) {
@@ -343,7 +344,6 @@
     }
     initScores();
 
-    // Renderização dos grupos
     function renderGrupos() {
         const container = document.getElementById('gruposContainer');
         if (!container) return;
@@ -353,7 +353,7 @@
             const jogos = gerarJogosGrupo(times);
             const card = document.createElement('div');
             card.className = 'card-grupo';
-            card.innerHTML = `<div class="header-grupo">GRUPO ${letra}</div><table class="tabela-jogos"><tbody id="grupo-${letra}-body"></tbody></table>`;
+            card.innerHTML = `<div class="header-grupo">GRUPO ${letra}</div><table class="tabela-jogos"><tbody id="grupo-${letra}-body"></tbody></tr>`;
             container.appendChild(card);
             const tbody = card.querySelector(`#grupo-${letra}-body`);
             for (let idx=0; idx<jogos.length; idx++) {
@@ -377,9 +377,7 @@
         }
     }
 
-    // ---------------------------------------------------------------
-    // 2. BUSCA DE DADOS REAIS (múltiplos proxies + JSON openfootball)
-    // ---------------------------------------------------------------
+    // Busca de dados reais (openfootball + proxies)
     const PROXIES = [
         'https://api.allorigins.win/raw?url=',
         'https://corsproxy.io/?',
@@ -401,8 +399,25 @@
                     for (let match of data.matches) {
                         const round = match.round;
                         if (round && round.startsWith('Matchday') && match.group) {
-                            const grupo = match.group;
-                            const timeCasa = match.team1, timeFora = match.team2;
+                            let grupo = match.group;
+                            let timeCasa = match.team1, timeFora = match.team2;
+                            // Mapeamento de nomes originais (inglês) para português (simplificado)
+                            const mapaNomes = {
+                                'Brazil': 'Brasil', 'Germany': 'Alemanha', 'Argentina': 'Argentina', 'France': 'França',
+                                'Spain': 'Espanha', 'England': 'Inglaterra', 'Portugal': 'Portugal', 'Netherlands': 'Holanda',
+                                'Belgium': 'Bélgica', 'Croatia': 'Croácia', 'Italy': 'Itália', 'Colombia': 'Colômbia',
+                                'Mexico': 'México', 'USA': 'Estados Unidos', 'Japan': 'Japão', 'South Korea': 'Coreia do Sul',
+                                'Australia': 'Austrália', 'Switzerland': 'Suíça', 'Denmark': 'Dinamarca', 'Sweden': 'Suécia',
+                                'Poland': 'Polônia', 'Morocco': 'Marrocos', 'Nigeria': 'Nigéria', 'Senegal': 'Senegal',
+                                'Ghana': 'Gana', 'Cameroon': 'Camarões', 'Egypt': 'Egito', 'Algeria': 'Argélia',
+                                'Iran': 'Irã', 'Saudi Arabia': 'Arábia Saudita', 'Canada': 'Canadá', 'New Zealand': 'Nova Zelândia',
+                                'Costa Rica': 'Costa Rica', 'Panama': 'Panamá', 'Uruguay': 'Uruguai', 'Paraguay': 'Paraguai',
+                                'Chile': 'Chile', 'Peru': 'Peru', 'Ecuador': 'Equador', 'Scotland': 'Escócia',
+                                'Wales': 'País de Gales', 'Bosnia': 'Bósnia', 'Jordan': 'Jordânia', 'Tunisia': 'Tunísia',
+                                'Ivory Coast': 'Costa do Marfim', 'Serbia': 'Sérvia'
+                            };
+                            timeCasa = mapaNomes[timeCasa] || timeCasa;
+                            timeFora = mapaNomes[timeFora] || timeFora;
                             let golC = null, golF = null;
                             if (match.score && match.score.ft) {
                                 golC = match.score.ft[0];
@@ -432,7 +447,7 @@
         return { ok: false };
     }
 
-    // Fallback inteligente: simula resultados com base em força realística
+    // Fallback simulação (para quando offline)
     function gerarSimulacaoRealista() {
         let modificados = 0;
         for (let grupo in gruposReais) {
@@ -454,9 +469,7 @@
         return modificados;
     }
 
-    // ---------------------------------------------------------------
-    // 3. LÓGICA DE CLASSIFICAÇÃO E MATA-MATA
-    // ---------------------------------------------------------------
+    // Lógica de classificação e mata-mata
     function calcularClassificacaoGrupo(grupo) {
         const times = gruposReais[grupo];
         const jogos = gerarJogosGrupo(times);
@@ -487,7 +500,6 @@
             todos.push({ time: ordem[1], pos: 2 });
             todos.push({ time: ordem[2], pos: 3 });
         }
-        // melhores 8 terceiros (simplificado: ordena por pontos imaginários)
         const terceiros = todos.filter(t => t.pos === 3);
         terceiros.sort((a,b) => (pontosSimulados(b.time) - pontosSimulados(a.time)));
         const melhores3 = terceiros.slice(0,8);
@@ -505,7 +517,6 @@
         return total + Math.random() * 2;
     }
 
-    // simula vencedor com placar
     function simularPartida(timeA, timeB) {
         let forcaA = 1, forcaB = 1;
         for (let g in scoresDB) {
@@ -593,9 +604,6 @@
         document.getElementById('final').innerHTML = mataMata.final ? renderMatch(mataMata.final) : '<div class="match-card final-card">🏆 Aguarde final</div>';
     }
 
-    // ---------------------------------------------------------------
-    // 4. CONTROLE PRINCIPAL
-    // ---------------------------------------------------------------
     async function fullSync() {
         const statusDiv = document.getElementById('statusMsg');
         const dot = document.getElementById('onlineIndicator');
@@ -617,7 +625,6 @@
         renderEliminatorias();
     }
 
-    // Abas
     function initTabs() {
         const btns = document.querySelectorAll('.tab-btn');
         const panes = {
